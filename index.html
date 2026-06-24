@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador Consentimiento RGPD</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:Arial,sans-serif;background:#f9f9f9;color:#333}
+        .container{max-width:900px;margin:0 auto;padding:20px}
+        .header{background:#1F4A1F;color:white;padding:30px;text-align:center;border-radius:8px;margin-bottom:30px}
+        .card{background:white;padding:30px;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,0.1)}
+        .hidden{display:none}
+        h2{color:#1F4A1F;border-bottom:2px solid #A8A055;padding-bottom:10px;margin:20px 0 15px 0}
+        .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:20px 0}
+        @media(max-width:768px){.form-grid{grid-template-columns:1fr}}
+        input,textarea{padding:10px;border:1px solid #ddd;border-radius:6px;width:100%;margin-bottom:10px;font-family:inherit}
+        input:focus,textarea:focus{outline:none;border-color:#1F4A1F;box-shadow:0 0 0 3px rgba(31,74,31,0.1)}
+        label{font-weight:bold;display:block;margin-bottom:5px}
+        .required{color:red}
+        button{border:none;padding:12px 24px;border-radius:6px;cursor:pointer;font-weight:bold;margin:10px 5px 10px 0}
+        .btn-primary{background:#1F4A1F;color:white;width:100%;text-transform:uppercase;margin-top:20px}
+        .btn-primary:hover{background:#163d16}
+        .btn-secondary{background:#A8A055;color:white}
+        .btn-secondary:hover{background:#957a47}
+        .btn-back{background:#ddd;color:#333}
+        .btn-back:hover{background:#bbb}
+        .btn-clear{background:#ef4444;color:white;width:auto}
+        .btn-clear:hover{background:#dc2626}
+        .error{background:#fee;border:1px solid #fcc;color:#c33;padding:15px;border-radius:6px;margin-bottom:20px}
+        .step{margin-bottom:20px}
+        .checkbox-item{display:flex;gap:10px;align-items:center;padding:12px;background:#f0f8f0;border-radius:6px;margin:10px 0}
+        #canvas{border:3px solid #1F4A1F;background:white;cursor:crosshair;display:block;margin:20px 0;width:100%;max-width:600px;height:150px}
+        .info{background:#fff3cd;border-left:4px solid #ffc107;padding:15px;margin:15px 0;border-radius:6px}
+        textarea{min-height:60px}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Generador Consentimiento RGPD</h1>
+            <p>Misschic S.L. & S2D Global Motors S.L.</p>
+        </div>
+
+        <div class="card" id="paso1">
+            <div id="error"></div>
+            <h2>Paso 1: Datos del Cliente</h2>
+
+            <div class="form-grid">
+                <div><label>Nombre Fiscal <span class="required">*</span></label><input type="text" id="nombre"></div>
+                <div><label>CIF/NIF <span class="required">*</span></label><input type="text" id="cif"></div>
+            </div>
+
+            <div class="form-grid">
+                <div><label>Nombre Comercial</label><input type="text" id="comercial"></div>
+                <div><label>Provincia <span class="required">*</span></label><input type="text" id="provincia"></div>
+            </div>
+
+            <div><label>Dirección <span class="required">*</span></label><input type="text" id="direccion"></div>
+
+            <div class="form-grid">
+                <div><label>Código Postal <span class="required">*</span></label><input type="text" id="cp"></div>
+                <div><label>Localidad <span class="required">*</span></label><input type="text" id="localidad"></div>
+            </div>
+
+            <div class="form-grid">
+                <div><label>Email <span class="required">*</span></label><input type="email" id="email"></div>
+                <div><label>Móvil <span class="required">*</span></label><input type="tel" id="movil"></div>
+            </div>
+
+            <button class="btn-primary" onclick="irPaso2()">SIGUIENTE</button>
+        </div>
+
+        <div class="card hidden" id="paso2">
+            <h2>Paso 2: Seleccionar Empresa(s)</h2>
+
+            <div class="checkbox-item">
+                <input type="checkbox" id="misschic" checked>
+                <label for="misschic"><strong>Misschic S.L.</strong> (ES-B93148070)</label>
+            </div>
+
+            <div class="checkbox-item">
+                <input type="checkbox" id="s2d" checked>
+                <label for="s2d"><strong>S2D Global Motors S.L.</strong> (ES-B56974967)</label>
+            </div>
+
+            <div>
+                <button class="btn-primary" onclick="irPaso3()">SIGUIENTE</button>
+                <button class="btn-back" onclick="irPaso1()">VOLVER</button>
+            </div>
+        </div>
+
+        <div class="card hidden" id="paso3">
+            <h2>Paso 3: Firma Digital</h2>
+
+            <div class="info">
+                IMPORTANTE: Debe aceptar y firmar para continuar. Dibuje su firma en el recuadro.
+            </div>
+
+            <div class="checkbox-item">
+                <input type="checkbox" id="acepto">
+                <label for="acepto"><strong>He leído y acepto la política de protección de datos RGPD</strong> <span class="required">*</span></label>
+            </div>
+
+            <h3 style="margin-top:30px;color:#1F4A1F">Firma (dibuje con ratón o dedo):</h3>
+            <canvas id="canvas"></canvas>
+
+            <button class="btn-clear" onclick="limpiarFirma()">Limpiar Firma</button>
+
+            <div>
+                <button class="btn-primary" onclick="descargarPDF()">DESCARGAR PDF</button>
+                <button class="btn-back" onclick="irPaso2()">VOLVER</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let canvas = document.getElementById('canvas');
+        let ctx = canvas.getContext('2d');
+        let dibujando = false;
+
+        canvas.width = canvas.offsetWidth;
+        canvas.height = 150;
+
+        canvas.onmousedown = e => {
+            dibujando = true;
+            let rect = canvas.getBoundingClientRect();
+            ctx.beginPath();
+            ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+        };
+
+        canvas.onmousemove = e => {
+            if(!dibujando) return;
+            let rect = canvas.getBoundingClientRect();
+            ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+            ctx.stroke();
+        };
+
+        canvas.onmouseup = () => { dibujando = false; };
+        canvas.onmouseout = () => { dibujando = false; };
+
+        canvas.ontouchstart = e => {
+            e.preventDefault();
+            dibujando = true;
+            let rect = canvas.getBoundingClientRect();
+            let touch = e.touches[0];
+            ctx.beginPath();
+            ctx.moveTo(touch.clientX - rect.left, touch.clientY - rect.top);
+        };
+
+        canvas.ontouchmove = e => {
+            e.preventDefault();
+            if(!dibujando) return;
+            let rect = canvas.getBoundingClientRect();
+            let touch = e.touches[0];
+            ctx.lineTo(touch.clientX - rect.left, touch.clientY - rect.top);
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+            ctx.stroke();
+        };
+
+        canvas.ontouchend = () => { dibujando = false; };
+
+        function limpiarFirma() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function mostrarError(msg) {
+            document.getElementById('error').innerHTML = '<div class="error">' + msg + '</div>';
+        }
+
+        function limpiarError() {
+            document.getElementById('error').innerHTML = '';
+        }
+
+        function irPaso2() {
+            limpiarError();
+            if(!document.getElementById('nombre').value.trim() ||
+               !document.getElementById('cif').value.trim() ||
+               !document.getElementById('direccion').value.trim() ||
+               !document.getElementById('cp').value.trim() ||
+               !document.getElementById('localidad').value.trim() ||
+               !document.getElementById('provincia').value.trim() ||
+               !document.getElementById('email').value.trim() ||
+               !document.getElementById('movil').value.trim()) {
+                mostrarError('Todos los campos con * son obligatorios');
+                return;
+            }
+            document.getElementById('paso1').classList.add('hidden');
+            document.getElementById('paso2').classList.remove('hidden');
+        }
+
+        function irPaso3() {
+            limpiarError();
+            if(!document.getElementById('misschic').checked && !document.getElementById('s2d').checked) {
+                mostrarError('Selecciona al menos una empresa');
+                return;
+            }
+            document.getElementById('paso2').classList.add('hidden');
+            document.getElementById('paso3').classList.remove('hidden');
+        }
+
+        function irPaso1() {
+            document.getElementById('paso2').classList.add('hidden');
+            document.getElementById('paso1').classList.remove('hidden');
+        }
+
+        function irPaso2Back() {
+            document.getElementById('paso3').classList.add('hidden');
+            document.getElementById('paso2').classList.remove('hidden');
+        }
+
+        function descargarPDF() {
+            limpiarError();
+            if(!document.getElementById('acepto').checked) {
+                mostrarError('Debes aceptar la política de protección de datos');
+                return;
+            }
+
+            let firma = canvas.toDataURL();
+            let misschic = document.getElementById('misschic').checked;
+            let s2d = document.getElementById('s2d').checked;
+
+            if(misschic) generarPDF('misschic', firma);
+            if(s2d) setTimeout(() => generarPDF('s2d', firma), 800);
+        }
+
+        function generarPDF(empresa, firma) {
+            let datos = {
+                nombre: document.getElementById('nombre').value,
+                cif: document.getElementById('cif').value,
+                comercial: document.getElementById('comercial').value,
+                direccion: document.getElementById('direccion').value,
+                cp: document.getElementById('cp').value,
+                localidad: document.getElementById('localidad').value,
+                provincia: document.getElementById('provincia').value,
+                email: document.getElementById('email').value,
+                movil: document.getElementById('movil').value
+            };
+
+            let empresas = {
+                misschic: { nombre: 'Misschic S.L.', cif: 'ES-B93148070', email: 'administración@misschic.es' },
+                s2d: { nombre: 'S2D Global Motors S.L.', cif: 'ES-B56974967', email: 'admin@s2dglobalmotors.com' }
+            };
+
+            let emp = empresas[empresa];
+            let fecha = new Date().toLocaleDateString('es-ES');
+            let hora = new Date().toLocaleTimeString('es-ES');
+
+            let html = '<div style="font-family:Arial;font-size:11px;line-height:1.6;color:#333;padding:20px">';
+            html += '<h1 style="text-align:center;color:#1F4A1F;margin-bottom:20px">CONSENTIMIENTO RGPD/LOPDGDD</h1>';
+            html += '<p><strong>' + emp.nombre + '</strong> como Responsable del tratamiento informa que los datos se tratarán conforme al RGPD (UE) 2016/679.</p>';
+
+            html += '<h2 style="color:#1F4A1F;margin:20px 0 10px 0;border-bottom:1px solid #ddd;padding-bottom:5px">DATOS DEL CLIENTE</h2>';
+            html += '<p style="line-height:1.8">';
+            html += '<strong>CIF:</strong> ' + datos.cif + '<br>';
+            html += '<strong>Empresa:</strong> ' + datos.nombre + '<br>';
+            html += '<strong>Dirección:</strong> ' + datos.direccion + ', ' + datos.cp + ' ' + datos.localidad + '<br>';
+            html += '<strong>Email:</strong> ' + datos.email + '<br>';
+            html += '<strong>Teléfono:</strong> ' + datos.movil + '<br>';
+            html += '</p>';
+
+            html += '<h2 style="color:#1F4A1F;margin:20px 0 10px 0;border-bottom:1px solid #ddd;padding-bottom:5px">CONSENTIMIENTO</h2>';
+            html += '<p>El Interesado consiente el tratamiento de sus datos y acepta comunicaciones comerciales vía WhatsApp, SMS, email, etc.</p>';
+
+            html += '<h2 style="color:#1F4A1F;margin:20px 0 10px 0;border-bottom:1px solid #ddd;padding-bottom:5px">FIRMA DIGITAL</h2>';
+            html += '<img src="' + firma + '" style="max-width:300px;height:auto;border:2px solid #1F4A1F;margin:20px 0;">';
+            html += '<p style="font-size:10px"><strong>Firma Digital</strong></p>';
+
+            html += '<p style="font-size:9px;margin-top:30px;border-top:1px solid #ddd;padding-top:10px">';
+            html += '<strong>Fecha:</strong> ' + fecha + ' ' + hora + '<br>';
+            html += '<strong>Empresa:</strong> ' + emp.nombre + '<br>';
+            html += 'Este documento es válido para auditoría RGPD.';
+            html += '</p>';
+            html += '</div>';
+
+            let opt = {
+                margin: 15,
+                filename: 'CONSENTIMIENTO_' + datos.cif.replace(/[^A-Z0-9]/g,'_') + '_' + fecha.replace(/\//g,'') + '_' + emp.nombre.replace(/\s/g,'_') + '.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
+            };
+
+            html2pdf().set(opt).from(html, 'string').save();
+        }
+    </script>
+</body>
+</html>
