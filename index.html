@@ -97,9 +97,9 @@
 
       <div class="panel" data-step="2">
         <h2>2. Empresa destinataria</h2>
-        <p>Selecciona la empresa para la que se firma el consentimiento:</p>
-        <label class="company"><input type="radio" name="empresa" value="misschic"> <strong>Misschic S.L.</strong> — ES-B93148070</label>
-        <label class="company"><input type="radio" name="empresa" value="s2d"> <strong>S2D Global Motors S.L.</strong> — ES-B56974967</label>
+        <p>Selecciona una empresa o ambas. Cada empresa seleccionada recibirá el consentimiento como responsable independiente del tratamiento:</p>
+        <label class="company"><input type="checkbox" name="empresa" value="misschic"> <strong>Misschic S.L.</strong> — ES-B93148070</label>
+        <label class="company"><input type="checkbox" name="empresa" value="s2d"> <strong>S2D Global Motors S.L.</strong> — ES-B56974967</label>
         <p class="error" id="error2" role="alert"></p>
         <div class="actions"><button class="secondary" type="button" onclick="mostrarPaso(1)">Atrás</button><button class="primary" type="button" onclick="irFirma()">Continuar</button></div>
       </div>
@@ -108,11 +108,12 @@
         <h2>3. Consentimiento y firma</h2>
         <div class="legal">
           <strong>Información sobre protección de datos</strong>
-          <p>La empresa seleccionada, como responsable del tratamiento, tratará los datos facilitados para gestionar la relación profesional, elaborar documentación comercial, realizar las gestiones administrativas o aduaneras necesarias y enviar comunicaciones relacionadas con sus servicios.</p>
+          <p>La empresa o empresas seleccionadas actuarán como responsables independientes del tratamiento. Tratarán los datos facilitados para gestionar la relación profesional, elaborar documentación comercial, realizar las gestiones administrativas o aduaneras necesarias y enviar comunicaciones comerciales sobre sus propios productos o servicios.</p>
           <p>La base jurídica es el consentimiento del interesado y, cuando corresponda, la ejecución de la relación contractual. Los datos se conservarán durante el tiempo necesario para cumplir estas finalidades y las obligaciones legales.</p>
+          <p>Los datos no se venderán ni se cederán a terceros para que realicen sus propias acciones comerciales. Podrán acceder a ellos proveedores que actúen como encargados del tratamiento y podrán comunicarse cuando exista una obligación legal.</p>
           <p>El interesado puede solicitar el acceso, rectificación, supresión, oposición, limitación o portabilidad de sus datos, retirar el consentimiento y presentar una reclamación ante la Agencia Española de Protección de Datos (www.aepd.es).</p>
         </div>
-        <label class="accept"><input id="acepto" type="checkbox"> <span>He leído la información anterior y acepto expresamente el tratamiento de mis datos conforme al RGPD y la LOPDGDD. *</span></label>
+        <label class="accept"><input id="acepto" type="checkbox"> <span>He leído la información anterior y doy mi consentimiento expreso a la empresa o empresas seleccionadas para tratar mis datos con las finalidades descritas, incluido el envío de comunicaciones comerciales propias. *</span></label>
         <div class="signature-wrap">
           <strong>Firma del cliente *</strong>
           <canvas id="firma" aria-label="Área de firma"></canvas>
@@ -131,7 +132,7 @@
             <dt>NIF/CIF</dt><dd id="resCif"></dd>
             <dt>Email</dt><dd id="resEmail"></dd>
             <dt>Móvil</dt><dd id="resMovil"></dd>
-            <dt>Empresa</dt><dd id="resEmpresa"></dd>
+            <dt>Empresa(s)</dt><dd id="resEmpresa"></dd>
             <dt>Fecha y hora</dt><dd id="resFecha"></dd>
             <dt>Consentimiento</dt><dd>Aceptado expresamente</dd>
             <dt>Firma</dt><dd><img id="resFirma" class="signature-preview" alt="Firma del cliente"></dd>
@@ -204,7 +205,9 @@
     function limpiarFirma(){ trazos=[]; trazoActual=null; fechaFirma=null; redibujarFirma(); }
     function tieneFirma(){ return trazos.some(t=>t.length>1); }
     function valor(id){ return document.getElementById(id).value.trim(); }
-    function empresaElegida(){ const e=document.querySelector('input[name="empresa"]:checked'); return e?EMPRESAS[e.value]:null; }
+    function empresasElegidas(){
+      return Array.from(document.querySelectorAll('input[name="empresa"]:checked')).map(e=>EMPRESAS[e.value]);
+    }
 
     function mostrarPaso(numero){
       document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',Number(p.dataset.step)===numero));
@@ -226,7 +229,7 @@
     }
     function irFirma(){
       const error=document.getElementById('error2');
-      if(!empresaElegida()){ error.textContent='Selecciona una empresa.'; return; }
+      if(!empresasElegidas().length){ error.textContent='Selecciona al menos una empresa.'; return; }
       error.textContent=''; mostrarPaso(3);
     }
     function irResumen(){
@@ -234,12 +237,12 @@
       if(!document.getElementById('acepto').checked){ error.textContent='Debes aceptar la información de protección de datos.'; return; }
       if(!tieneFirma()){ error.textContent='Añade tu firma dentro del recuadro.'; return; }
       error.textContent=''; fechaFirma=new Date();
-      const emp=empresaElegida();
+      const empresas=empresasElegidas();
       document.getElementById('resNombre').textContent=valor('nombre');
       document.getElementById('resCif').textContent=valor('cif');
       document.getElementById('resEmail').textContent=valor('email');
       document.getElementById('resMovil').textContent=valor('movil');
-      document.getElementById('resEmpresa').textContent=`${emp.nombre} (${emp.cif})`;
+      document.getElementById('resEmpresa').textContent=empresas.map(e=>`${e.nombre} (${e.cif})`).join(' · ');
       document.getElementById('resFecha').textContent=formatearFecha(fechaFirma);
       redibujarFirma(); document.getElementById('resFirma').src=canvas.toDataURL('image/png');
       mostrarPaso(4);
@@ -265,19 +268,25 @@
     }
 
     function crearPDF(){
-      const emp=empresaElegida(); let c='';
+      const empresas=empresasElegidas();
+      const empresasTexto=empresas.map(e=>`${e.nombre} (${e.cif})`).join(' | ');
+      let c='';
       c+='0.10 0.30 0.14 rg 0 808 595 34 re f\n';
       c+=lineaTexto('CONSENTIMIENTO RGPD / LOPDGDD',50,780,17,true);
       c+=lineaTexto('JUSTIFICANTE DE CONSENTIMIENTO',50,758,11,false);
-      let y=726, r;
+      c+='0.93 0.97 0.94 rg 45 671 505 62 re f\n0 g\n';
+      c+=lineaTexto('CONSENTIMIENTO OTORGADO A:',55,716,12,true);
+      let empresaY=697;
+      for(const e of empresas){c+=lineaTexto(`${e.nombre} - ${e.cif}`,55,empresaY,11,true);empresaY-=16;}
+      let y=650, r;
       r=campoPdf('DATOS DEL CLIENTE',valor('nombre'),y);c+=r.out;y=r.y;
       r=campoPdf('NIF/CIF',valor('cif'),y);c+=r.out;y=r.y;
       r=campoPdf('CORREO ELECTRONICO',valor('email'),y);c+=r.out;y=r.y;
       r=campoPdf('TELEFONO MOVIL',valor('movil'),y);c+=r.out;y=r.y;
-      r=campoPdf('EMPRESA DESTINATARIA',`${emp.nombre} (${emp.cif})`,y);c+=r.out;y=r.y;
+      r=campoPdf('EMPRESA O EMPRESAS RESPONSABLES',empresasTexto,y);c+=r.out;y=r.y;
       r=campoPdf('FECHA Y HORA DE LA FIRMA',formatearFecha(fechaFirma),y);c+=r.out;y=r.y-6;
       c+=lineaTexto('DECLARACION DE CONSENTIMIENTO',50,y,11,true);y-=18;
-      const legal='El interesado declara haber leido la informacion sobre proteccion de datos y acepta expresamente el tratamiento de sus datos por la empresa indicada, para gestionar la relacion profesional, la documentacion comercial y administrativa, las gestiones aduaneras necesarias y las comunicaciones relacionadas con sus servicios. Puede ejercer los derechos de acceso, rectificacion, supresion, oposicion, limitacion y portabilidad, retirar el consentimiento y reclamar ante la AEPD.';
+      const legal='El interesado declara haber leido la informacion sobre proteccion de datos y da su consentimiento expreso a cada empresa seleccionada, que actuara como responsable independiente, para gestionar la relacion profesional, la documentacion comercial y administrativa, las gestiones aduaneras necesarias y enviar comunicaciones comerciales sobre sus propios productos o servicios. Los datos no se venderan ni se cederan a terceros para sus propias acciones comerciales, sin perjuicio del acceso de encargados del tratamiento o de comunicaciones exigidas por ley. El interesado puede retirar el consentimiento y ejercer sus derechos, asi como reclamar ante la AEPD.';
       for(const l of partir(legal,88)){c+=lineaTexto(l,50,y,9,false);y-=12;}
       y-=4;c+=lineaTexto('Consentimiento RGPD/LOPDGDD: ACEPTADO EXPRESAMENTE',50,y,10,true);y-=26;
       c+=lineaTexto('FIRMA DEL CLIENTE',50,y,10,true); const boxY=y-125;
