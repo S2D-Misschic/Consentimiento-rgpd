@@ -1,104 +1,319 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Consentimiento RGPD</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <style>
-        body { font-family: Arial; max-width: 800px; margin: 40px auto; padding: 20px; }
-        h1 { color: #1F4A1F; }
-        input, textarea { width: 100%; padding: 10px; margin: 5px 0 20px 0; font-family: Arial; }
-        .checkbox { margin: 20px 0; }
-        button { padding: 12px 24px; background: #1F4A1F; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        button:hover { background: #163d16; }
-        .section { margin: 30px 0; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Consentimiento RGPD</title>
+  <style>
+    :root { --green:#194d25; --green2:#267236; --soft:#f3f7f3; --line:#d8e2d9; --danger:#b42318; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:#f4f5f4; color:#202522; font-family:Arial,Helvetica,sans-serif; }
+    .app { width:min(850px,calc(100% - 28px)); margin:24px auto; }
+    header { padding:30px 24px; border-radius:16px; background:var(--green); color:white; text-align:center; }
+    header h1 { margin:0 0 8px; font-size:clamp(25px,5vw,38px); }
+    header p { margin:0; opacity:.9; }
+    .steps { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin:24px 0; }
+    .step-mark { text-align:center; color:#707670; font-size:13px; }
+    .step-mark span { display:grid; place-items:center; width:40px; height:40px; margin:0 auto 7px; border-radius:50%; background:#d6d9d6; color:#555; font-weight:bold; }
+    .step-mark.active { color:var(--green); font-weight:bold; }
+    .step-mark.active span,.step-mark.done span { background:var(--green); color:white; }
+    .card { padding:clamp(20px,4vw,38px); border:1px solid #e3e6e3; border-radius:16px; background:white; box-shadow:0 5px 20px rgba(0,0,0,.05); }
+    .panel { display:none; }
+    .panel.active { display:block; }
+    h2 { margin:0 0 22px; color:var(--green); }
+    .grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+    label.field { display:block; font-weight:bold; }
+    label.field.full { grid-column:1/-1; }
+    input[type=text],input[type=email],input[type=tel] { width:100%; margin-top:7px; padding:13px; border:1px solid #bbc5bc; border-radius:8px; font:inherit; }
+    input:focus { outline:3px solid #cce6d0; border-color:var(--green2); }
+    .company { display:block; margin:12px 0; padding:17px; border:1px solid var(--line); border-radius:10px; cursor:pointer; }
+    .company:has(input:checked) { border-color:var(--green2); background:var(--soft); }
+    .company input { margin-right:10px; }
+    .legal { max-height:250px; overflow:auto; padding:18px; border:1px solid var(--line); border-radius:10px; background:#fafbfa; line-height:1.5; font-size:14px; }
+    .accept { display:flex; gap:10px; align-items:flex-start; margin:18px 0; font-weight:bold; }
+    .accept input { width:20px; height:20px; flex:0 0 auto; }
+    .signature-wrap { margin-top:20px; }
+    #firma { width:100%; height:220px; display:block; border:2px dashed #9cac9e; border-radius:10px; background:white; touch-action:none; cursor:crosshair; }
+    .hint { margin:7px 0 0; color:#687068; font-size:13px; }
+    .actions { display:flex; justify-content:space-between; gap:12px; margin-top:26px; }
+    button { padding:13px 22px; border:0; border-radius:8px; font:inherit; font-weight:bold; cursor:pointer; }
+    button.primary { background:var(--green); color:white; }
+    button.primary:hover { background:#113a1b; }
+    button.secondary { background:#e8ece8; color:#283029; }
+    button.clear { margin-top:10px; padding:9px 14px; background:#f1f2f1; color:#394039; }
+    .error { min-height:20px; margin:12px 0 0; color:var(--danger); font-weight:bold; }
+    .summary { padding:20px; border-radius:10px; background:var(--soft); line-height:1.65; }
+    .summary dl { display:grid; grid-template-columns:160px 1fr; margin:0; }
+    .summary dt { font-weight:bold; }
+    .summary dd { margin:0 0 8px; overflow-wrap:anywhere; }
+    .signature-preview { width:min(100%,520px); height:150px; margin-top:8px; border:1px solid var(--line); object-fit:contain; background:white; }
+    .success-note { margin-top:16px; padding:14px; border-left:4px solid var(--green2); background:#edf7ef; }
+    @media (max-width:620px) {
+      .app { width:min(100% - 16px,850px); margin:8px auto; }
+      .steps { grid-template-columns:repeat(4,1fr); }
+      .step-mark { font-size:0; }
+      .step-mark span { font-size:14px; }
+      .grid { grid-template-columns:1fr; }
+      label.field.full { grid-column:auto; }
+      .summary dl { grid-template-columns:1fr; }
+      .summary dd { margin-bottom:12px; }
+    }
+  </style>
 </head>
 <body>
+  <main class="app">
+    <header>
+      <h1>Consentimiento RGPD/LOPDGDD</h1>
+      <p>Misschic S.L. · S2D Global Motors S.L.</p>
+    </header>
 
-<h1>Generador Consentimiento RGPD</h1>
+    <nav class="steps" aria-label="Progreso">
+      <div class="step-mark active"><span>1</span>Datos</div>
+      <div class="step-mark"><span>2</span>Empresa</div>
+      <div class="step-mark"><span>3</span>Firma</div>
+      <div class="step-mark"><span>4</span>Documento</div>
+    </nav>
 
-<div class="section">
-    <h2>Datos del Cliente</h2>
-    <input type="text" id="nombre" placeholder="Nombre Fiscal">
-    <input type="text" id="cif" placeholder="CIF">
-    <input type="email" id="email" placeholder="Email">
-    <input type="tel" id="movil" placeholder="Móvil">
-</div>
+    <section class="card">
+      <div class="panel active" data-step="1">
+        <h2>1. Datos del cliente</h2>
+        <div class="grid">
+          <label class="field full">Nombre o razón social *
+            <input id="nombre" type="text" autocomplete="name" required>
+          </label>
+          <label class="field">NIF/CIF *
+            <input id="cif" type="text" required>
+          </label>
+          <label class="field">Teléfono móvil *
+            <input id="movil" type="tel" autocomplete="tel" required>
+          </label>
+          <label class="field full">Correo electrónico *
+            <input id="email" type="email" autocomplete="email" required>
+          </label>
+        </div>
+        <p class="error" id="error1" role="alert"></p>
+        <div class="actions"><span></span><button class="primary" type="button" onclick="irEmpresa()">Continuar</button></div>
+      </div>
 
-<div class="section">
-    <h2>Seleccionar Empresa(s)</h2>
-    <label><input type="checkbox" id="misschic" checked> Misschic S.L. (ES-B93148070)</label><br>
-    <label><input type="checkbox" id="s2d" checked> S2D Global Motors (ES-B56974967)</label>
-</div>
+      <div class="panel" data-step="2">
+        <h2>2. Empresa destinataria</h2>
+        <p>Selecciona la empresa para la que se firma el consentimiento:</p>
+        <label class="company"><input type="radio" name="empresa" value="misschic"> <strong>Misschic S.L.</strong> — ES-B93148070</label>
+        <label class="company"><input type="radio" name="empresa" value="s2d"> <strong>S2D Global Motors S.L.</strong> — ES-B56974967</label>
+        <p class="error" id="error2" role="alert"></p>
+        <div class="actions"><button class="secondary" type="button" onclick="mostrarPaso(1)">Atrás</button><button class="primary" type="button" onclick="irFirma()">Continuar</button></div>
+      </div>
 
-<div class="section checkbox">
-    <label><input type="checkbox" id="acepto"> He leído y acepto la política RGPD</label>
-</div>
+      <div class="panel" data-step="3">
+        <h2>3. Consentimiento y firma</h2>
+        <div class="legal">
+          <strong>Información sobre protección de datos</strong>
+          <p>La empresa seleccionada, como responsable del tratamiento, tratará los datos facilitados para gestionar la relación profesional, elaborar documentación comercial, realizar las gestiones administrativas o aduaneras necesarias y enviar comunicaciones relacionadas con sus servicios.</p>
+          <p>La base jurídica es el consentimiento del interesado y, cuando corresponda, la ejecución de la relación contractual. Los datos se conservarán durante el tiempo necesario para cumplir estas finalidades y las obligaciones legales.</p>
+          <p>El interesado puede solicitar el acceso, rectificación, supresión, oposición, limitación o portabilidad de sus datos, retirar el consentimiento y presentar una reclamación ante la Agencia Española de Protección de Datos (www.aepd.es).</p>
+        </div>
+        <label class="accept"><input id="acepto" type="checkbox"> <span>He leído la información anterior y acepto expresamente el tratamiento de mis datos conforme al RGPD y la LOPDGDD. *</span></label>
+        <div class="signature-wrap">
+          <strong>Firma del cliente *</strong>
+          <canvas id="firma" aria-label="Área de firma"></canvas>
+          <p class="hint">Firma dentro del recuadro usando el ratón, el dedo o un lápiz táctil.</p>
+          <button class="clear" type="button" onclick="limpiarFirma()">Borrar firma</button>
+        </div>
+        <p class="error" id="error3" role="alert"></p>
+        <div class="actions"><button class="secondary" type="button" onclick="mostrarPaso(2)">Atrás</button><button class="primary" type="button" onclick="irResumen()">Revisar documento</button></div>
+      </div>
 
-<button onclick="generar()">DESCARGAR PDF</button>
+      <div class="panel" data-step="4">
+        <h2>4. Resumen y descarga</h2>
+        <div class="summary">
+          <dl>
+            <dt>Cliente</dt><dd id="resNombre"></dd>
+            <dt>NIF/CIF</dt><dd id="resCif"></dd>
+            <dt>Email</dt><dd id="resEmail"></dd>
+            <dt>Móvil</dt><dd id="resMovil"></dd>
+            <dt>Empresa</dt><dd id="resEmpresa"></dd>
+            <dt>Fecha y hora</dt><dd id="resFecha"></dd>
+            <dt>Consentimiento</dt><dd>Aceptado expresamente</dd>
+            <dt>Firma</dt><dd><img id="resFirma" class="signature-preview" alt="Firma del cliente"></dd>
+          </dl>
+        </div>
+        <div class="success-note">Comprueba los datos y pulsa el botón para descargar el justificante en PDF.</div>
+        <p class="error" id="error4" role="alert"></p>
+        <div class="actions"><button class="secondary" type="button" onclick="mostrarPaso(3)">Atrás</button><button class="primary" type="button" onclick="descargarPDF()">Descargar PDF</button></div>
+      </div>
+    </section>
+  </main>
 
-<script>
-function generar() {
-    if (!document.getElementById('acepto').checked) {
-        alert('Debes aceptar la política');
-        return;
-    }
-
-    let nombre = document.getElementById('nombre').value || 'Sin especificar';
-    let cif = document.getElementById('cif').value || 'Sin especificar';
-    let email = document.getElementById('email').value || 'Sin especificar';
-    let movil = document.getElementById('movil').value || 'Sin especificar';
-    let misschic = document.getElementById('misschic').checked;
-    let s2d = document.getElementById('s2d').checked;
-    let fecha = new Date().toLocaleDateString('es-ES');
-
-    if (misschic) {
-        descargarPDF('Misschic S.L.', 'ES-B93148070', nombre, cif, email, movil, fecha);
-    }
-    if (s2d) {
-        setTimeout(() => {
-            descargarPDF('S2D Global Motors', 'ES-B56974967', nombre, cif, email, movil, fecha);
-        }, 1000);
-    }
-}
-
-function descargarPDF(empresa, cifEmp, nombre, cif, email, movil, fecha) {
-    let html = `
-        <h1 style="text-align:center; color:#1F4A1F">CONSENTIMIENTO RGPD/LOPDGDD</h1>
-        <p><b>${empresa}</b>, como Responsable del tratamiento, informa que los datos se tratarán conforme al RGPD.</p>
-
-        <h2 style="color:#1F4A1F">DATOS DEL CLIENTE</h2>
-        <p>Nombre: ${nombre}<br>CIF: ${cif}<br>Email: ${email}<br>Móvil: ${movil}</p>
-
-        <h2 style="color:#1F4A1F">FINES Y LEGITIMACIÓN</h2>
-        <p>Mantener relación profesional incluyendo documentos comerciales, tramitación aduanal y comunicaciones comerciales.</p>
-
-        <h2 style="color:#1F4A1F">DERECHOS DEL INTERESADO</h2>
-        <p>Derecho a retirar consentimiento, acceso, supresión, rectificación y reclamación ante AEPD (www.aepd.es).</p>
-
-        <h2 style="color:#1F4A1F">CONSENTIMIENTO</h2>
-        <p>El Interesado consiente el tratamiento de sus datos en los términos expuestos y acepta comunicaciones vía WhatsApp, SMS, email, etc.</p>
-
-        <p style="margin-top:40px; font-size:10px; border-top:1px solid #ddd; padding-top:20px">
-            Fecha: ${fecha}<br>
-            Empresa: ${empresa} (${cifEmp})<br>
-            Documento válido para auditoría RGPD/LOPDGDD
-        </p>
-    `;
-
-    let opt = {
-        margin: 10,
-        filename: 'CONSENTIMIENTO_' + cif.replace(/\//g,'_') + '_' + fecha.replace(/\//g,'') + '_' + empresa.replace(/\s/g,'_') + '.pdf',
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
+  <script>
+    const EMPRESAS = {
+      misschic: { nombre:'Misschic S.L.', cif:'ES-B93148070' },
+      s2d: { nombre:'S2D Global Motors S.L.', cif:'ES-B56974967' }
     };
+    const canvas = document.getElementById('firma');
+    const ctx = canvas.getContext('2d');
+    let trazos = [];
+    let trazoActual = null;
+    let fechaFirma = null;
 
-    html2pdf().set(opt).from(html, 'string').save();
-}
-</script>
+    function ajustarCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      const ratio = Math.max(1, window.devicePixelRatio || 1);
+      canvas.width = Math.round(rect.width * ratio);
+      canvas.height = Math.round(rect.height * ratio);
+      ctx.setTransform(ratio,0,0,ratio,0,0);
+      redibujarFirma();
+    }
 
+    function redibujarFirma() {
+      const rect = canvas.getBoundingClientRect();
+      ctx.clearRect(0,0,rect.width,rect.height);
+      ctx.strokeStyle = '#111';
+      ctx.lineWidth = 2.2;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      for (const trazo of trazos) {
+        if (!trazo.length) continue;
+        ctx.beginPath();
+        ctx.moveTo(trazo[0].x*rect.width,trazo[0].y*rect.height);
+        for (let i=1;i<trazo.length;i++) ctx.lineTo(trazo[i].x*rect.width,trazo[i].y*rect.height);
+        ctx.stroke();
+      }
+    }
+
+    function puntoFirma(e) {
+      const r = canvas.getBoundingClientRect();
+      return { x:(e.clientX-r.left)/r.width, y:(e.clientY-r.top)/r.height };
+    }
+    canvas.addEventListener('pointerdown',e=>{
+      e.preventDefault(); canvas.setPointerCapture(e.pointerId);
+      trazoActual=[puntoFirma(e)]; trazos.push(trazoActual);
+    });
+    canvas.addEventListener('pointermove',e=>{
+      if (!trazoActual) return;
+      trazoActual.push(puntoFirma(e)); redibujarFirma();
+    });
+    function terminarTrazo(e){
+      if (!trazoActual) return;
+      trazoActual.push(puntoFirma(e)); trazoActual=null; redibujarFirma();
+    }
+    canvas.addEventListener('pointerup',terminarTrazo);
+    canvas.addEventListener('pointercancel',()=>{trazoActual=null;});
+    window.addEventListener('resize',ajustarCanvas);
+    requestAnimationFrame(ajustarCanvas);
+
+    function limpiarFirma(){ trazos=[]; trazoActual=null; fechaFirma=null; redibujarFirma(); }
+    function tieneFirma(){ return trazos.some(t=>t.length>1); }
+    function valor(id){ return document.getElementById(id).value.trim(); }
+    function empresaElegida(){ const e=document.querySelector('input[name="empresa"]:checked'); return e?EMPRESAS[e.value]:null; }
+
+    function mostrarPaso(numero){
+      document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',Number(p.dataset.step)===numero));
+      document.querySelectorAll('.step-mark').forEach((m,i)=>{
+        m.classList.toggle('active',i+1===numero); m.classList.toggle('done',i+1<numero);
+      });
+      window.scrollTo({top:0,behavior:'smooth'});
+      if(numero===3) requestAnimationFrame(ajustarCanvas);
+    }
+
+    function irEmpresa(){
+      const ids=['nombre','cif','movil','email'];
+      const vacio=ids.find(id=>!valor(id));
+      const email=document.getElementById('email');
+      const error=document.getElementById('error1');
+      if(vacio){ error.textContent='Completa todos los campos obligatorios.'; document.getElementById(vacio).focus(); return; }
+      if(!email.checkValidity()){ error.textContent='Introduce un correo electrónico válido.'; email.focus(); return; }
+      error.textContent=''; mostrarPaso(2);
+    }
+    function irFirma(){
+      const error=document.getElementById('error2');
+      if(!empresaElegida()){ error.textContent='Selecciona una empresa.'; return; }
+      error.textContent=''; mostrarPaso(3);
+    }
+    function irResumen(){
+      const error=document.getElementById('error3');
+      if(!document.getElementById('acepto').checked){ error.textContent='Debes aceptar la información de protección de datos.'; return; }
+      if(!tieneFirma()){ error.textContent='Añade tu firma dentro del recuadro.'; return; }
+      error.textContent=''; fechaFirma=new Date();
+      const emp=empresaElegida();
+      document.getElementById('resNombre').textContent=valor('nombre');
+      document.getElementById('resCif').textContent=valor('cif');
+      document.getElementById('resEmail').textContent=valor('email');
+      document.getElementById('resMovil').textContent=valor('movil');
+      document.getElementById('resEmpresa').textContent=`${emp.nombre} (${emp.cif})`;
+      document.getElementById('resFecha').textContent=formatearFecha(fechaFirma);
+      redibujarFirma(); document.getElementById('resFirma').src=canvas.toDataURL('image/png');
+      mostrarPaso(4);
+    }
+    function formatearFecha(d){ return new Intl.DateTimeFormat('es-ES',{dateStyle:'full',timeStyle:'medium'}).format(d); }
+
+    function cp1252(c){
+      const n=c.codePointAt(0), mapa={8364:128,8218:130,402:131,8222:132,8230:133,8224:134,8225:135,710:136,8240:137,352:138,8249:139,338:140,381:142,8216:145,8217:146,8220:147,8221:148,8226:149,8211:150,8212:151,732:152,8482:153,353:154,8250:155,339:156,382:158,376:159};
+      return mapa[n] ?? (n<=255?n:63);
+    }
+    function textoHex(s){ return Array.from(String(s)).map(c=>cp1252(c).toString(16).padStart(2,'0')).join('').toUpperCase(); }
+    function lineaTexto(texto,x,y,tam=10,negrita=false){
+      return `BT /${negrita?'F2':'F1'} ${tam} Tf ${x} ${y} Td <${textoHex(texto)}> Tj ET\n`;
+    }
+    function partir(texto,max){
+      const palabras=String(texto).split(/\s+/), lineas=[]; let linea='';
+      for(const p of palabras){ const prueba=linea?linea+' '+p:p; if(prueba.length>max&&linea){lineas.push(linea);linea=p;}else linea=prueba; }
+      if(linea) lineas.push(linea); return lineas;
+    }
+    function campoPdf(etiqueta,contenido,y){
+      let out=lineaTexto(etiqueta,50,y,10,true); const ls=partir(contenido,72); y-=15;
+      for(const l of ls){out+=lineaTexto(l,50,y,10,false);y-=13;} return {out,y:y-4};
+    }
+
+    function crearPDF(){
+      const emp=empresaElegida(); let c='';
+      c+='0.10 0.30 0.14 rg 0 808 595 34 re f\n';
+      c+=lineaTexto('CONSENTIMIENTO RGPD / LOPDGDD',50,780,17,true);
+      c+=lineaTexto('JUSTIFICANTE DE CONSENTIMIENTO',50,758,11,false);
+      let y=726, r;
+      r=campoPdf('DATOS DEL CLIENTE',valor('nombre'),y);c+=r.out;y=r.y;
+      r=campoPdf('NIF/CIF',valor('cif'),y);c+=r.out;y=r.y;
+      r=campoPdf('CORREO ELECTRONICO',valor('email'),y);c+=r.out;y=r.y;
+      r=campoPdf('TELEFONO MOVIL',valor('movil'),y);c+=r.out;y=r.y;
+      r=campoPdf('EMPRESA DESTINATARIA',`${emp.nombre} (${emp.cif})`,y);c+=r.out;y=r.y;
+      r=campoPdf('FECHA Y HORA DE LA FIRMA',formatearFecha(fechaFirma),y);c+=r.out;y=r.y-6;
+      c+=lineaTexto('DECLARACION DE CONSENTIMIENTO',50,y,11,true);y-=18;
+      const legal='El interesado declara haber leido la informacion sobre proteccion de datos y acepta expresamente el tratamiento de sus datos por la empresa indicada, para gestionar la relacion profesional, la documentacion comercial y administrativa, las gestiones aduaneras necesarias y las comunicaciones relacionadas con sus servicios. Puede ejercer los derechos de acceso, rectificacion, supresion, oposicion, limitacion y portabilidad, retirar el consentimiento y reclamar ante la AEPD.';
+      for(const l of partir(legal,88)){c+=lineaTexto(l,50,y,9,false);y-=12;}
+      y-=4;c+=lineaTexto('Consentimiento RGPD/LOPDGDD: ACEPTADO EXPRESAMENTE',50,y,10,true);y-=26;
+      c+=lineaTexto('FIRMA DEL CLIENTE',50,y,10,true); const boxY=y-125;
+      c+='0.65 G 0.8 w 50 '+boxY+' 495 112 re S\n';
+      c+='0 G 1.25 w 1 J 1 j\n';
+      for(const trazo of trazos){
+        if(trazo.length<2) continue;
+        const p0=trazo[0]; c+=`${(58+p0.x*479).toFixed(2)} ${(boxY+8+(1-p0.y)*96).toFixed(2)} m\n`;
+        for(let i=1;i<trazo.length;i++){const p=trazo[i];c+=`${(58+p.x*479).toFixed(2)} ${(boxY+8+(1-p.y)*96).toFixed(2)} l\n`;}
+        c+='S\n';
+      }
+      c+=lineaTexto('Documento generado electronicamente por el interesado.',50,38,8,false);
+      const objetos=[];
+      objetos[1]='<< /Type /Catalog /Pages 2 0 R >>';
+      objetos[2]='<< /Type /Pages /Kids [3 0 R] /Count 1 >>';
+      objetos[3]='<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R /F2 5 0 R >> >> /Contents 6 0 R >>';
+      objetos[4]='<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>';
+      objetos[5]='<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>';
+      objetos[6]=`<< /Length ${c.length} >>\nstream\n${c}endstream`;
+      let pdf='%PDF-1.4\n', offsets=[0];
+      for(let i=1;i<objetos.length;i++){offsets[i]=pdf.length;pdf+=`${i} 0 obj\n${objetos[i]}\nendobj\n`;}
+      const xref=pdf.length; pdf+=`xref\n0 ${objetos.length}\n0000000000 65535 f \n`;
+      for(let i=1;i<objetos.length;i++) pdf+=String(offsets[i]).padStart(10,'0')+' 00000 n \n';
+      pdf+=`trailer\n<< /Size ${objetos.length} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`;
+      return new Blob([new TextEncoder().encode(pdf)],{type:'application/pdf'});
+    }
+
+    function descargarPDF(){
+      const error=document.getElementById('error4');
+      try{
+        const blob=crearPDF(), url=URL.createObjectURL(blob), a=document.createElement('a');
+        const seguro=valor('cif').replace(/[^a-z0-9_-]/gi,'_');
+        a.href=url;a.download=`CONSENTIMIENTO_RGPD_${seguro}_${new Date().toISOString().slice(0,10)}.pdf`;
+        document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);error.textContent='';
+      }catch(e){console.error(e);error.textContent='No se pudo generar el PDF. Recarga la página e inténtalo de nuevo.';}
+    }
+  </script>
 </body>
 </html>
