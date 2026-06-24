@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<script type="application/json" id="cowork-artifact-meta">
+{
+  "name": "Consentimiento Rgpd Generator",
+  "schemaVersion": 1,
+  "description": "Generador de consentimientos RGPD/LOPDGDD para clientes de Misschic S.L. y S2D Global Motors S.L. Captura datos del cliente en dos pasos y genera documentos descargables (.txt) con validación digital y timestamp auditable.",
+  "mcpTools": [],
+  "mcpServerNames": []
+}
+</script>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Consentimiento RGPD - Misschic S.L. & S2D Global Motors</title>
+    <script crossorigin="anonymous" src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin="anonymous" src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        :root {
+            color-scheme: light;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: #f9f9f9;
+            color: #333333;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background: #1F4A1F;
+            color: white;
+            padding: 30px 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .form-section {
+            margin-bottom: 30px;
+        }
+        .form-section h2 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1F4A1F;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #A8A055;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .form-group.full {
+            grid-column: 1 / -1;
+        }
+        label {
+            font-weight: 500;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #333333;
+        }
+        label .required {
+            color: #ef4444;
+        }
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        textarea {
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="tel"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #1F4A1F;
+            box-shadow: 0 0 0 3px rgba(31, 74, 31, 0.1);
+        }
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        .contacts-section {
+            margin-top: 20px;
+        }
+        .contact-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr auto;
+            gap: 15px;
+            margin-bottom: 15px;
+            align-items: flex-end;
+        }
+        @media (max-width: 768px) {
+            .contact-row {
+                grid-template-columns: 1fr;
+            }
+        }
+        .btn-delete {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-delete:hover {
+            background: #dc2626;
+        }
+        .btn-add {
+            background: #1F4A1F;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 15px;
+        }
+        .btn-add:hover {
+            background: #163d16;
+        }
+        .btn-primary {
+            background: #1F4A1F;
+            color: white;
+            border: none;
+            padding: 14px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            width: 100%;
+            margin-top: 20px;
+        }
+        .btn-primary:hover {
+            background: #163d16;
+        }
+        .btn-primary:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .btn-secondary {
+            background: #A8A055;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-secondary:hover {
+            background: #957a47;
+        }
+        .btn-tertiary {
+            background: #e5e5e5;
+            color: #333333;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-tertiary:hover {
+            background: #d1d5db;
+        }
+        .step-indicator {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            justify-content: center;
+        }
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+        }
+        .step-number {
+            background: #1F4A1F;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+        .step.active .step-number {
+            background: #A8A055;
+        }
+        .step.inactive .step-number {
+            background: #ccc;
+        }
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin: 20px 0;
+        }
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: #f0f8f0;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 1px solid #ddd;
+            transition: all 0.2s;
+        }
+        .checkbox-item:hover {
+            border-color: #1F4A1F;
+            background: #e8f5e8;
+        }
+        .checkbox-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #1F4A1F;
+        }
+        .checkbox-item label {
+            margin: 0;
+            cursor: pointer;
+            flex: 1;
+        }
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .button-group.step2 {
+            justify-content: space-between;
+        }
+        @media (max-width: 768px) {
+            .button-group.step2 {
+                flex-direction: column;
+            }
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 800px;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+        .modal-header {
+            background: #1F4A1F;
+            color: white;
+            padding: 20px;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-body {
+            overflow-y: auto;
+            padding: 20px;
+            flex: 1;
+            font-family: "Courier New", monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            background: #fafafa;
+        }
+        .modal-footer {
+            display: flex;
+            gap: 15px;
+            padding: 20px;
+            border-top: 1px solid #ddd;
+            justify-content: flex-end;
+        }
+        .summary-box {
+            background: #f0f8f0;
+            border-left: 4px solid #1F4A1F;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        .summary-box strong {
+            color: #1F4A1F;
+        }
+        .error {
+            background: #fee;
+            border: 1px solid #fcc;
+            color: #c33;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        .success {
+            background: #f0f8f0;
+            border: 1px solid #1F4A1F;
+            color: #1F4A1F;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        .loader {
+            display: inline-block;
+            width: 4px;
+            height: 4px;
+            background: white;
+            border-radius: 50%;
+            margin: 0 4px;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        const ConsentApp = () => {
+            const [step, setStep] = useState(1);
+            const [formData, setFormData] = useState({
+                nombreFiscal: '',
+                cif: '',
+                nombreComercial: '',
+                direccion: '',
+                cp: '',
+                localidad: '',
+                provincia: '',
+                telFijo: '',
+                movil: '',
+                email: '',
+                actividad: '',
+                direccionEnvio: '',
+                cpEnvio: '',
+                localidadEnvio: '',
+                provinciaEnvio: '',
+                atencion: '',
+                contactos: [{ nombre: '', telefono: '', email: '' }]
+            });
+            const [empresas, setEmpresas] = useState({
+                misschic: false,
+                s2d: false
+            });
+            const [showPreview, setShowPreview] = useState(false);
+            const [error, setError] = useState('');
+
+            const empresasData = {
+                misschic: {
+                    nombre: 'Misschic S.L.',
+                    cif: 'ES-B93148070',
+                    direccion: 'C/Reding 11, 1°9',
+                    cp: '29016',
+                    localidad: 'Málaga',
+                    provincia: 'Málaga',
+                    email: 'administración@misschic.es'
+                },
+                s2d: {
+                    nombre: 'S2D Global Motors S.L.',
+                    cif: 'ES-B56974967',
+                    direccion: 'Avda. Torre Pacheco nº9, 1º D',
+                    cp: '30739',
+                    localidad: 'Torre Pacheco',
+                    provincia: 'Murcia',
+                    email: 'admin@s2dglobalmotors.com'
+                }
+            };
+
+            const handleInputChange = (e) => {
+                const { name, value } = e.target;
+                setFormData(prev => ({
+                    ...prev,
+                    [name]: value
+                }));
+            };
+
+            const handleContactChange = (index, field, value) => {
+                const newContactos = [...formData.contactos];
+                newContactos[index][field] = value;
+                setFormData(prev => ({
+                    ...prev,
+                    contactos: newContactos
+                }));
+            };
+
+            const addContact = () => {
+                setFormData(prev => ({
+                    ...prev,
+                    contactos: [...prev.contactos, { nombre: '', telefono: '', email: '' }]
+                }));
+            };
+
+            const removeContact = (index) => {
+                if (formData.contactos.length > 1) {
+                    setFormData(prev => ({
+                        ...prev,
+                        contactos: prev.contactos.filter((_, i) => i !== index)
+                    }));
+                }
+            };
+
+            const validateStep1 = () => {
+                const required = ['nombreFiscal', 'cif', 'direccion', 'cp', 'localidad', 'provincia', 'movil', 'email'];
+                for (let field of required) {
+                    if (!formData[field].trim()) {
+                        setError(`El campo "${field}" es obligatorio.`);
+                        return false;
+                    }
+                }
+                if (formData.contactos.some(c => !c.nombre.trim() || !c.telefono.trim() || !c.email.trim())) {
+                    setError('Todos los contactos deben tener nombre, teléfono y email.');
+                    return false;
+                }
+                setError('');
+                return true;
+            };
+
+            const nextStep = () => {
+                if (validateStep1()) {
+                    setStep(2);
+                }
+            };
+
+            const prevStep = () => {
+                setStep(1);
+            };
+
+            const generateDocumentContent = (empresaKey) => {
+                const empresa = empresasData[empresaKey];
+                const timestamp = new Date().toLocaleString('es-ES', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+                const hash = btoa(formData.cif + timestamp + empresa.cif).substring(0, 16).toUpperCase();
+
+                const contactosText = formData.contactos
+                    .map(c => `    ${c.nombre} - Telf: ${c.telefono} - Email: ${c.email}`)
+                    .join('\n');
+
+                const content = `═══════════════════════════════════════════════════════════════════════════════════
+                   CONSENTIMIENTO PARA EL TRATAMIENTO
+                        DE DATOS PERSONALES
+                           RGPD - GDPR
+═══════════════════════════════════════════════════════════════════════════════════
+
+    ${empresa.nombre}, como Responsable del tratamiento de los datos
+    personales del Interesado, le informa que estos datos se tratarán de
+    conformidad con lo dispuesto en el Reglamento (UE) 2016/679, de 27 de
+    abril (RGPD), y la Ley Orgánica 3/2018, de 5 de diciembre (LOPDGDD).
+
+═══════════════════════════════════════════════════════════════════════════════════
+                           DATOS DEL CLIENTE
+    CIF/NIF:              ${formData.cif}
+    Razón Social:         ${formData.nombreFiscal}
+    Nombre Comercial:     ${formData.nombreComercial || 'N/A'}
+    Dirección:            ${formData.direccion}, ${formData.cp} ${formData.localidad} (${formData.provincia})
+    Código Postal:        ${formData.cp}
+    Localidad:            ${formData.localidad}
+    Provincia:            ${formData.provincia}
+    Correo Electrónico:   ${formData.email}
+    Teléfono Fijo:        ${formData.telFijo || 'N/A'}
+    Teléfono Móvil:       ${formData.movil}
+    Actividad:            ${formData.actividad || 'N/A'}
+
+═══════════════════════════════════════════════════════════════════════════════════
+                    FINES Y LEGITIMACIÓN DEL TRATAMIENTO
+    Mantener una relación profesional (por interés legítimo del responsable,
+    art. 6.1.f RGPD) incluyendo: generación de documentos comerciales
+    (presupuestos, proformas, albaranes), tramitación aduanal si procede,
+    y envío de comunicaciones comerciales de productos o servicios (con el
+    consentimiento del interesado, art. 6.1.a RGPD).
+
+═══════════════════════════════════════════════════════════════════════════════════
+                    CRITERIOS DE CONSERVACIÓN DE LOS DATOS
+    Se conservarán indefinidamente mientras se mantenga la relación comercial
+    activa o potencial y el consentimiento no haya sido revocado. El Interesado
+    podrá solicitar en cualquier momento la revocación del consentimiento y la
+    supresión de sus datos, dirigiéndose al email de contacto indicado en este
+    documento. Una vez revocado el consentimiento, los datos serán suprimidos
+    conforme a obligaciones legales vigentes.
+
+═══════════════════════════════════════════════════════════════════════════════════
+                         COMUNICACIÓN DE LOS DATOS
+    No se comunicarán los datos a terceros, salvo obligación legal.
+
+═══════════════════════════════════════════════════════════════════════════════════
+                       DERECHOS QUE ASISTEN AL INTERESADO
+    • Derecho a retirar el consentimiento en cualquier momento.
+    • Derecho de acceso, supresión, rectificación y portabilidad de sus datos
+      y de limitación u oposición a su tratamiento.
+    • Derecho a presentar una reclamación ante la Autoridad de control
+      (https://www.aepd.es) si considera que el tratamiento no se ajusta a la
+      normativa vigente.
+
+═══════════════════════════════════════════════════════════════════════════════════
+                   DATOS DE CONTACTO PARA EJERCER SUS DERECHOS
+    El responsable del tratamiento:
+                          ${empresa.nombre}
+                     ${empresa.direccion}
+               ${empresa.cp} ${empresa.localidad} (${empresa.provincia})
+                      Email: ${empresa.email}
+
+    Para ejercitar sus derechos, dirigirse a través de email con asunto:
+    "El ejercicio del derecho solicitado" + su nombre completo
+
+═══════════════════════════════════════════════════════════════════════════════════
+                          CONTACTOS AUTORIZADOS
+${contactosText}
+
+═══════════════════════════════════════════════════════════════════════════════════
+                              CONSENTIMIENTO
+    El Interesado consiente el tratamiento de sus datos en los términos
+    expuestos.
+
+    Asimismo, se acepta el envío de comunicaciones comerciales vía WhatsApp,
+    SMS, correo electrónico, Dropbox, Redes Sociales, etc., como método de
+    información que concierna a la empresa.
+
+═══════════════════════════════════════════════════════════════════════════════════
+                            FIRMA DIGITAL Y AUDITORÍA
+                        ✓ CONSENTIMIENTO VÁLIDO Y REGISTRADO
+    Estado:               Aceptado
+    ID Consentimiento:    ${hash}
+    Fecha/Hora:           ${timestamp}
+    Validación:           Sistema Digital de Consentimiento
+    Almacenamiento:       Carpeta de auditoría corporativa
+    Vigencia:             Indefinida (hasta revocación escrita)
+
+═══════════════════════════════════════════════════════════════════════════════════
+    Este documento constituye prueba válida de consentimiento RGPD/LOPDGDD.
+                  Conservar para auditoría y cumplimiento normativo.
+                              Generado: ${timestamp}
+═══════════════════════════════════════════════════════════════════════════════════`;
+
+                return { content, hash, timestamp };
+            };
+
+            const downloadDocument = (empresaKey) => {
+                const empresa = empresasData[empresaKey];
+                const { content, hash, timestamp } = generateDocumentContent(empresaKey);
+                const fecha = timestamp.split(' ')[0].replace(/\//g, '');
+                const filename = `CONSENTIMIENTO_${formData.cif}_${fecha}_${hash}_${empresa.nombre.replace(/\s+/g, '_')}.txt`;
+
+                const blob = new Blob([content], { type: 'text/plain;charset=utf-8;' });
+                const link = document.createElement('a');
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', filename);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            };
+
+            const handleDownload = () => {
+                if (!empresas.misschic && !empresas.s2d) {
+                    setError('Debe seleccionar al menos una empresa.');
+                    return;
+                }
+                setError('');
+                if (empresas.misschic) {
+                    setTimeout(() => downloadDocument('misschic'), 100);
+                }
+                if (empresas.s2d) {
+                    setTimeout(() => downloadDocument('s2d'), empresas.misschic ? 300 : 100);
+                }
+            };
+
+            return (
+                <div className="container">
+                    <div className="header">
+                        <h1>Generador de Consentimiento RGPD/LOPDGDD</h1>
+                        <p>Misschic S.L. & S2D Global Motors S.L.</p>
+                    </div>
+
+                    <div className="step-indicator">
+                        <div className={`step ${step >= 1 ? (step === 1 ? 'active' : '') : 'inactive'}`}>
+                            <div className="step-number">1</div>
+                            <span>Datos Cliente</span>
+                        </div>
+                        <div className={`step ${step >= 2 ? (step === 2 ? 'active' : '') : 'inactive'}`}>
+                            <div className="step-number">2</div>
+                            <span>Seleccionar Empresa</span>
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        {error && <div className="error">❌ {error}</div>}
+
+                        {step === 1 && (
+                            <>
+                                <div className="form-section">
+                                    <h2>Datos de Cliente</h2>
+                                    <div className="form-grid">
+                                        <div className="form-group">
+                                            <label>Nombre Fiscal <span className="required">*</span></label>
+                                            <input
+                                                type="text"
+                                                name="nombreFiscal"
+                                                value={formData.nombreFiscal}
+                                                onChange={handleInputChange}
+                                                placeholder="Ej: Acme Motors S.L."
+                                            />
+                                        </div>
+                                        <div className="form-group">
+                                            <label>CIF/NIF <span className="required">*</span></label>
+                                            <input
+                                                type="text"
+                                                name="cif"
+                                                value={formData.cif}
+                                                onChange={handleInputChange}
+                                                placeholder="Ej: ES-B12345678"
+                                            />
+                                        </div>
+                                        <div className="form-group">
+                                            <label>Nombre Comercial</label>
+                                            <input
+                                                type="text"
+                                                name="nombreComercial"
+                                                value={formData.nombreComercial}
+                                                onChange={handleInputChange}
+                                                placeholder="(opcional)"
+                                            />
+                                        </div>
+                                        <div className="form-group">
+                                            <label>Provincia <span className="required">*</span></label>
+                                            <input
+                                                type="text"
+                                                name="provincia"
+                                                value={formData.provincia}
+                                                onChange={handleInputChange}
+                                                placeholder="Ej: Madrid"
+                                            />
+                                        </div>
+                                        <div className="form-group full">
+                                            <label>Dirección <span className="required">*</span></label>
+                                            <input
+                                                type="text"
+                                                name="direccion"
+                                                value={formData.direccion}
+                                                onChange={handleInputChange}
+                                                placeholder="Ej: Calle Principal 123, 4º B"
+                                            />
+                                        </div>
+                                        <div className="form-group">
+                                            <label>Código Postal <span className="required">*</span></label>
+                                            <input
+                                                type="text"
+                                                name="cp"
+                                                value={formData.cp}
+                                                onChange={handleInputChange}
+                                                placeholder="Ej: 28001"
+                                            />
+                                        </div>
+                                        <div className="form-group">
+                                            <label>Localidad <span className="required">*</span></label>
+                                            <input
+                                                type="text"
+                                                name="localidad"
+                                                value={formData.localidad}
+                                                onChange={handleInputChange}
+                                                placeholder="Ej: Madrid"
+                                            />
+                                        </div>
+                                        <div className="form-group">
+                                            <label>Teléfono Fijo</label>
+                                            <input
+                                                type="tel"
+                                                name="telFijo"
+                                                value={formData.telFijo}
+                                                onChange={handleInputChange}
+                                                placeholder="Ej: 912345678"
+                                            />
+                                        </div>
+                                        <div className="form-group">
+                                            <label>Móvil <span className="required">*</span></label>
+                                            <input
+                                                type="tel"
+                                                name="movil"
+                                                value={formData.movil}
+                                                onChange={handleInputChange}
+                                                placeholder="Ej: 612345678"
+                                            />
+                                        </div>
+                                        <div className="form-group">
+                                            <label>Correo Electrónico <span className="required">*</span></label>
+                                            <input
+                                                type="email"
+                                                name="email"
+                                                value={formData.email}
+                                                onChange={handleInputChange}
+                                                placeholder="Ej: contacto@acmemotors.es"
+                                            />
+                                        </div>
+                                        <div className="form-group full">
+                                            <label>Actividad Empresarial</label>
+                                            <input
+                                                type="text"
+                                                name="actividad"
+                                                value={formData.actividad}
+                                                onChange={handleInputChange}
+                                                placeholder="Ej: Venta de motores industriales"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="form-section">
+                                    <h2>Datos de Envío (opcional - si son distintos)</h2>
+                                    <div className="form-grid">
+                                        <div className="form-group full">
+                                            <label>Dirección Envío</label>
+                                            <input
+                                                type="text"
+                                                name="direccionEnvio"
+                                                value={formData.direccionEnvio}
+                                                onChange={handleInputChange}
+                                                placeholder="(dejá en blanco si es igual a la dirección principal)"
+                                            />
+                                        </div>
+                                        <div className="form-group">
+                                            <label>C.P Envío</label>
+                                            <input
+                                                type="text"
+                                                name="cpEnvio"
+                                                value={formData.cpEnvio}
+                                                onChange={handleInputChange}
+                                            />
+                                        </div>
+                                        <div className="form-group">
+                                            <label>Localidad Envío</label>
+                                            <input
+                                                type="text"
+                                                name="localidadEnvio"
+                                                value={formData.localidadEnvio}
+                                                onChange={handleInputChange}
+                                            />
+                                        </div>
+                                        <div className="form-group">
+                                            <label>Provincia Envío</label>
+                                            <input
+                                                type="text"
+                                                name="provinciaEnvio"
+                                                value={formData.provinciaEnvio}
+                                                onChange={handleInputChange}
+                                            />
+                                        </div>
+                                        <div className="form-group full">
+                                            <label>A la Atención de</label>
+                                            <input
+                                                type="text"
+                                                name="atencion"
+                                                value={formData.atencion}
+                                                onChange={handleInputChange}
+                                                placeholder="(opcional)"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="form-section">
+                                    <h2>Contactos Autorizados (mínimo 1)</h2>
+                                    <div className="contacts-section">
+                                        {formData.contactos.map((contacto, index) => (
+                                            <div key={index} className="contact-row">
+                                                <div className="form-group">
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Nombre / Cargo"
+                                                        value={contacto.nombre}
+                                                        onChange={(e) => handleContactChange(index, 'nombre', e.target.value)}
+                                                    />
+                                                </div>
+                                                <div className="form-group">
+                                                    <input
+                                                        type="tel"
+                                                        placeholder="Teléfono / Móvil"
+                                                        value={contacto.telefono}
+                                                        onChange={(e) => handleContactChange(index, 'telefono', e.target.value)}
+                                                    />
+                                                </div>
+                                                <div className="form-group">
+                                                    <input
+                                                        type="email"
+                                                        placeholder="Email"
+                                                        value={contacto.email}
+                                                        onChange={(e) => handleContactChange(index, 'email', e.target.value)}
+                                                    />
+                                                </div>
+                                                {formData.contactos.length > 1 && (
+                                                    <button
+                                                        className="btn-delete"
+                                                        onClick={() => removeContact(index)}
+                                                        title="Eliminar contacto"
+                                                    >
+                                                        ✕
+                                                    </button>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <button className="btn-add" onClick={addContact}>
+                                        ➕ Agregar Contacto
+                                    </button>
+                                </div>
+
+                                <button className="btn-primary" onClick={nextStep}>
+                                    Siguiente → Generar Consentimiento
+                                </button>
+                            </>
+                        )}
+
+                        {step === 2 && (
+                            <>
+                                <div className="summary-box">
+                                    ✓ Cliente: <strong>{formData.nombreFiscal}</strong> ({formData.cif})
+                                </div>
+
+                                <div className="form-section">
+                                    <h2>Selecciona para qué empresa(s) generar consentimiento</h2>
+                                    <div className="checkbox-group">
+                                        <div className="checkbox-item">
+                                            <input
+                                                type="checkbox"
+                                                id="misschic"
+                                                checked={empresas.misschic}
+                                                onChange={(e) => setEmpresas(prev => ({ ...prev, misschic: e.target.checked }))}
+                                            />
+                                            <label htmlFor="misschic">
+                                                <strong>Misschic S.L.</strong> (ES-B93148070)
+                                            </label>
+                                        </div>
+                                        <div className="checkbox-item">
+                                            <input
+                                                type="checkbox"
+                                                id="s2d"
+                                                checked={empresas.s2d}
+                                                onChange={(e) => setEmpresas(prev => ({ ...prev, s2d: e.target.checked }))}
+                                            />
+                                            <label htmlFor="s2d">
+                                                <strong>S2D Global Motors S.L.</strong> (ES-B56974967)
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="button-group step2">
+                                    <button className="btn-secondary" onClick={() => setShowPreview(true)}>
+                                        👁️ Ver Preview
+                                    </button>
+                                    <div>
+                                        <button className="btn-primary" onClick={handleDownload} style={{ marginRight: '10px' }}>
+                                            ⬇️ Descargar Consentimiento
+                                        </button>
+                                        <button className="btn-tertiary" onClick={prevStep}>
+                                            ← Volver a Ficha
+                                        </button>
+                                    </div>
+                                </div>
+                            </>
+                        )}
+                    </div>
+
+                    {showPreview && (
+                        <div className={`modal ${showPreview ? 'active' : ''}`}>
+                            <div className="modal-content">
+                                <div className="modal-header">
+                                    <span>Preview - Consentimiento RGPD</span>
+                                    <button
+                                        className="btn-tertiary"
+                                        onClick={() => setShowPreview(false)}
+                                        style={{ background: 'rgba(255,255,255,0.2)', border: 'none', color: 'white' }}
+                                    >
+                                        ✕
+                                    </button>
+                                </div>
+                                <div className="modal-body">
+                                    {empresas.misschic && (
+                                        <div>
+                                            {generateDocumentContent('misschic').content}
+                                            <br /><br />
+                                            {empresas.s2d && <hr style={{ margin: '40px 0', opacity: 0.3 }} />}
+                                        </div>
+                                    )}
+                                    {empresas.s2d && (
+                                        <div>
+                                            {generateDocumentContent('s2d').content}
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="modal-footer">
+                                    <button className="btn-tertiary" onClick={() => setShowPreview(false)}>
+                                        Cerrar
+                                    </button>
+                                    <button className="btn-primary" onClick={() => {
+                                        handleDownload();
+                                        setShowPreview(false);
+                                    }}>
+                                        ⬇️ Descargar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        ReactDOM.createRoot(document.getElementById('root')).render(<ConsentApp />);
+    </script>
+</body>
+</html>
